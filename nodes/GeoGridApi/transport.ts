@@ -1,4 +1,9 @@
-import type { IDataObject, IExecuteFunctions, IHttpRequestMethods, IHttpRequestOptions } from 'n8n-workflow';
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	IHttpRequestMethods,
+	IHttpRequestOptions,
+} from 'n8n-workflow';
 import { sleep } from 'n8n-workflow';
 
 export const BASE_URL = 'https://api.geogridapi.io';
@@ -19,10 +24,18 @@ export async function apiRequest(
 		...(options.qs ? { qs: options.qs } : {}),
 		...(options.headers ? { headers: options.headers } : {}),
 	};
-	return (await this.helpers.httpRequestWithAuthentication.call(this, 'geoGridApi', request)) as IDataObject;
+	return (await this.helpers.httpRequestWithAuthentication.call(
+		this,
+		'geoGridApi',
+		request,
+	)) as IDataObject;
 }
 
-export async function apiBinaryRequest(this: IExecuteFunctions, path: string, qs: IDataObject): Promise<Buffer> {
+export async function apiBinaryRequest(
+	this: IExecuteFunctions,
+	path: string,
+	qs: IDataObject,
+): Promise<Buffer> {
 	const data = await this.helpers.httpRequestWithAuthentication.call(this, 'geoGridApi', {
 		method: 'GET',
 		url: `${BASE_URL}${path}`,
@@ -60,6 +73,9 @@ export function simplifyGrid(grid: IDataObject): IDataObject {
 	const previous = grid.previous;
 	return {
 		...without(grid, ['points']),
-		previous: previous && typeof previous === 'object' ? without(previous as IDataObject, ['ranks', 'rank_changes']) : null,
+		previous:
+			previous && typeof previous === 'object'
+				? without(previous as IDataObject, ['ranks', 'rank_changes'])
+				: null,
 	};
 }

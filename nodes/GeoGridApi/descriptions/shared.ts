@@ -1,7 +1,10 @@
 import type { INodeProperties } from 'n8n-workflow';
 
 /** Shows a property only for these resource / operation pairs. */
-export function showFor(resource: string[], operation?: string[]): INodeProperties['displayOptions'] {
+export function showFor(
+	resource: string[],
+	operation?: string[],
+): INodeProperties['displayOptions'] {
 	return { show: operation ? { resource, operation } : { resource } };
 }
 
@@ -106,7 +109,11 @@ export function formatFields(resource: string[], operation: string[]): INodeProp
 }
 
 /** "Wait for Completion" toggle and its timeout. */
-export function waitFields(resource: string[], operation: string[], what: string): INodeProperties[] {
+export function waitFields(
+	resource: string[],
+	operation: string[],
+	what: string,
+): INodeProperties[] {
 	return [
 		{
 			displayName: 'Wait for Completion',

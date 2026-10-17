@@ -80,7 +80,8 @@ export const batchFields: INodeProperties[] = [
 		placeholder: 'Add Grid',
 		required: true,
 		default: {},
-		description: 'Up to 50 grids: one listing with several keywords, or several listings with one keyword',
+		description:
+			'Up to 50 grids: one listing with several keywords, or several listings with one keyword',
 		displayOptions: showFor(BATCH, ['run']),
 		options: [
 			{
@@ -106,7 +107,8 @@ export const batchFields: INodeProperties[] = [
 						name: 'placeId',
 						type: 'string',
 						default: '',
-						description: 'Google place ID of the listing. Leave empty when you give a name and city.',
+						description:
+							'Google place ID of the listing. Leave empty when you give a name and city.',
 					},
 				],
 			},

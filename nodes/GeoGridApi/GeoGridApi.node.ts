@@ -25,7 +25,10 @@ export class GeoGridApi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'GeoGridAPI',
 		name: 'geoGridApi',
-		icon: { light: 'file:../../icons/geogridapi.svg', dark: 'file:../../icons/geogridapi.dark.svg' },
+		icon: {
+			light: 'file:../../icons/geogridapi.svg',
+			dark: 'file:../../icons/geogridapi.dark.svg',
+		},
 		group: ['transform'],
 		version: [1],
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -92,18 +95,30 @@ export class GeoGridApi implements INodeType {
 type Output = Array<Pick<INodeExecutionData, 'json' | 'binary'>>;
 
 const one = (json: IDataObject): Output => [{ json }];
-const many = (list: unknown): Output => ((list as IDataObject[] | undefined) ?? []).map((json) => ({ json }));
+const many = (list: unknown): Output =>
+	((list as IDataObject[] | undefined) ?? []).map((json) => ({ json }));
 
-async function runOperation(this: IExecuteFunctions, resource: string, operation: string, i: number): Promise<Output> {
+async function runOperation(
+	this: IExecuteFunctions,
+	resource: string,
+	operation: string,
+	i: number,
+): Promise<Output> {
 	if (resource === 'grid') return runGridOperation.call(this, operation, i);
 	if (resource === 'listing' && operation === 'search') {
-		const qs = { q: this.getNodeParameter('q', i) as string, language: this.getNodeParameter('language', i) as string };
+		const qs = {
+			q: this.getNodeParameter('q', i) as string,
+			language: this.getNodeParameter('language', i) as string,
+		};
 		return many((await apiRequest.call(this, 'GET', '/v1/places/search', { qs })).data);
 	}
 	if (resource === 'batch') return runBatchOperation.call(this, operation, i);
 	if (resource === 'schedule') return runScheduleOperation.call(this, operation, i);
-	if (resource === 'account' && operation === 'getBalance') return one(await apiRequest.call(this, 'GET', '/v1/balance'));
-	throw new NodeOperationError(this.getNode(), `Unsupported operation: ${resource} ${operation}`, { itemIndex: i });
+	if (resource === 'account' && operation === 'getBalance')
+		return one(await apiRequest.call(this, 'GET', '/v1/balance'));
+	throw new NodeOperationError(this.getNode(), `Unsupported operation: ${resource} ${operation}`, {
+		itemIndex: i,
+	});
 }
 
 /** Format of a grid (shape, size or density, options), shared by grids and batches. */
@@ -112,7 +127,9 @@ function formatBody(this: IExecuteFunctions, i: number): IDataObject {
 	const extra = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
 	return {
 		shape,
-		...(shape === 'square' ? { size: this.getNodeParameter('size', i) } : { density: this.getNodeParameter('density', i) }),
+		...(shape === 'square'
+			? { size: this.getNodeParameter('size', i) }
+			: { density: this.getNodeParameter('density', i) }),
 		...(extra.radiusKm !== undefined ? { radius_km: extra.radiusKm } : {}),
 		...(extra.language ? { language: extra.language } : {}),
 		...(extra.country ? { country: extra.country } : {}),
@@ -126,22 +143,40 @@ function gridBody(this: IExecuteFunctions, i: number): IDataObject {
 		listingSource === 'placeId'
 			? { place_id: this.getNodeParameter('placeId', i) as string }
 			: { query: this.getNodeParameter('query', i) as string };
-	return { ...listing, keyword: this.getNodeParameter('keyword', i) as string, ...formatBody.call(this, i) };
+	return {
+		...listing,
+		keyword: this.getNodeParameter('keyword', i) as string,
+		...formatBody.call(this, i),
+	};
 }
 
-async function runGridOperation(this: IExecuteFunctions, operation: string, i: number): Promise<Output> {
-	const shape = (grid: IDataObject) => (this.getNodeParameter('simplify', i, true) ? simplifyGrid(grid) : grid);
+async function runGridOperation(
+	this: IExecuteFunctions,
+	operation: string,
+	i: number,
+): Promise<Output> {
+	const shape = (grid: IDataObject) =>
+		this.getNodeParameter('simplify', i, true) ? simplifyGrid(grid) : grid;
 
 	if (operation === 'run') {
 		const options = this.getNodeParameter('options', i, {}) as IDataObject;
-		const headers = options.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : undefined;
-		const created = await apiRequest.call(this, 'POST', '/v1/grids', { body: gridBody.call(this, i), headers });
+		const headers = options.idempotencyKey
+			? { 'Idempotency-Key': options.idempotencyKey }
+			: undefined;
+		const created = await apiRequest.call(this, 'POST', '/v1/grids', {
+			body: gridBody.call(this, i),
+			headers,
+		});
 		if (!this.getNodeParameter('waitForCompletion', i)) return one(shape(created));
 		const maxWait = this.getNodeParameter('maxWaitSeconds', i) as number;
-		return one(shape(await waitUntilDone.call(this, `/v1/grids/${String(created.id)}`, created, maxWait)));
+		return one(
+			shape(await waitUntilDone.call(this, `/v1/grids/${String(created.id)}`, created, maxWait)),
+		);
 	}
 	if (operation === 'estimate') {
-		return one(await apiRequest.call(this, 'POST', '/v1/grids/estimate', { body: gridBody.call(this, i) }));
+		return one(
+			await apiRequest.call(this, 'POST', '/v1/grids/estimate', { body: gridBody.call(this, i) }),
+		);
 	}
 	if (operation === 'get') {
 		const gridId = encodeURIComponent(this.getNodeParameter('gridId', i) as string);
@@ -151,7 +186,11 @@ async function runGridOperation(this: IExecuteFunctions, operation: string, i: n
 		const gridId = this.getNodeParameter('gridId', i) as string;
 		const lang = this.getNodeParameter('lang', i) as string;
 		const field = this.getNodeParameter('binaryPropertyName', i) as string;
-		const png = await apiBinaryRequest.call(this, `/v1/grids/${encodeURIComponent(gridId)}/image`, lang ? { lang } : {});
+		const png = await apiBinaryRequest.call(
+			this,
+			`/v1/grids/${encodeURIComponent(gridId)}/image`,
+			lang ? { lang } : {},
+		);
 		const binary = await this.helpers.prepareBinaryData(png, `geogrid-${gridId}.png`, 'image/png');
 		return [{ json: { grid_id: gridId }, binary: { [field]: binary } }];
 	}
@@ -161,17 +200,24 @@ async function runGridOperation(this: IExecuteFunctions, operation: string, i: n
 		const qs: IDataObject =
 			by === 'gridId'
 				? { grid_id: this.getNodeParameter('historyGridId', i) }
-				: { place_id: this.getNodeParameter('historyPlaceId', i), keyword: this.getNodeParameter('historyKeyword', i) };
+				: {
+						place_id: this.getNodeParameter('historyPlaceId', i),
+						keyword: this.getNodeParameter('historyKeyword', i),
+					};
 		qs.limit = this.getNodeParameter('historyLimit', i);
 		return one(await apiRequest.call(this, 'GET', '/v1/history', { qs }));
 	}
-	throw new NodeOperationError(this.getNode(), `Unsupported operation: grid ${operation}`, { itemIndex: i });
+	throw new NodeOperationError(this.getNode(), `Unsupported operation: grid ${operation}`, {
+		itemIndex: i,
+	});
 }
 
 /** GET /v1/grids, page by page (`before` = `next_before` of the previous page). */
 async function listGrids(this: IExecuteFunctions, i: number): Promise<Output> {
 	const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-	const limit = returnAll ? Number.POSITIVE_INFINITY : (this.getNodeParameter('limit', i) as number);
+	const limit = returnAll
+		? Number.POSITIVE_INFINITY
+		: (this.getNodeParameter('limit', i) as number);
 	const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
 	const base: IDataObject = {
 		...(filters.placeId ? { place_id: filters.placeId } : {}),
@@ -190,42 +236,65 @@ async function listGrids(this: IExecuteFunctions, i: number): Promise<Output> {
 	return many(grids.slice(0, Number.isFinite(limit) ? limit : undefined));
 }
 
-async function runBatchOperation(this: IExecuteFunctions, operation: string, i: number): Promise<Output> {
+async function runBatchOperation(
+	this: IExecuteFunctions,
+	operation: string,
+	i: number,
+): Promise<Output> {
 	if (operation === 'get') {
 		const batchId = encodeURIComponent(this.getNodeParameter('batchId', i) as string);
 		return one(await apiRequest.call(this, 'GET', `/v1/batches/${batchId}`));
 	}
 	if (operation === 'run') {
 		const entries = (this.getNodeParameter('grids', i, {}) as { grid?: IDataObject[] }).grid ?? [];
-		if (entries.length === 0) throw new NodeOperationError(this.getNode(), 'Add at least one grid to the batch', { itemIndex: i });
+		if (entries.length === 0)
+			throw new NodeOperationError(this.getNode(), 'Add at least one grid to the batch', {
+				itemIndex: i,
+			});
 		const batchItems = entries.map((entry) => ({
 			keyword: entry.keyword,
 			...(entry.placeId ? { place_id: entry.placeId } : { query: entry.query }),
 		}));
-		const created = await apiRequest.call(this, 'POST', '/v1/batches', { body: { ...formatBody.call(this, i), items: batchItems } });
+		const created = await apiRequest.call(this, 'POST', '/v1/batches', {
+			body: { ...formatBody.call(this, i), items: batchItems },
+		});
 		if (!this.getNodeParameter('waitForCompletion', i)) return one(created);
 		const maxWait = this.getNodeParameter('maxWaitSeconds', i) as number;
-		return one(await waitUntilDone.call(this, `/v1/batches/${String(created.id)}`, created, maxWait));
+		return one(
+			await waitUntilDone.call(this, `/v1/batches/${String(created.id)}`, created, maxWait),
+		);
 	}
-	throw new NodeOperationError(this.getNode(), `Unsupported operation: batch ${operation}`, { itemIndex: i });
+	throw new NodeOperationError(this.getNode(), `Unsupported operation: batch ${operation}`, {
+		itemIndex: i,
+	});
 }
 
-async function runScheduleOperation(this: IExecuteFunctions, operation: string, i: number): Promise<Output> {
+async function runScheduleOperation(
+	this: IExecuteFunctions,
+	operation: string,
+	i: number,
+): Promise<Output> {
 	if (operation === 'create') {
 		const frequency = this.getNodeParameter('frequency', i) as string;
 		const body: IDataObject = {
 			grid_id: this.getNodeParameter('gridId', i),
 			frequency,
-			...(frequency === 'weekly' ? { weekday: this.getNodeParameter('weekday', i) } : { month_day: this.getNodeParameter('monthDay', i) }),
+			...(frequency === 'weekly'
+				? { weekday: this.getNodeParameter('weekday', i) }
+				: { month_day: this.getNodeParameter('monthDay', i) }),
 		};
 		return one(await apiRequest.call(this, 'POST', '/v1/schedules', { body }));
 	}
-	if (operation === 'getAll') return many((await apiRequest.call(this, 'GET', '/v1/schedules')).data);
+	if (operation === 'getAll')
+		return many((await apiRequest.call(this, 'GET', '/v1/schedules')).data);
 	const scheduleId = encodeURIComponent(this.getNodeParameter('scheduleId', i) as string);
 	if (operation === 'update') {
 		const body = { status: this.getNodeParameter('status', i) };
 		return one(await apiRequest.call(this, 'PATCH', `/v1/schedules/${scheduleId}`, { body }));
 	}
-	if (operation === 'delete') return one(await apiRequest.call(this, 'DELETE', `/v1/schedules/${scheduleId}`));
-	throw new NodeOperationError(this.getNode(), `Unsupported operation: schedule ${operation}`, { itemIndex: i });
+	if (operation === 'delete')
+		return one(await apiRequest.call(this, 'DELETE', `/v1/schedules/${scheduleId}`));
+	throw new NodeOperationError(this.getNode(), `Unsupported operation: schedule ${operation}`, {
+		itemIndex: i,
+	});
 }

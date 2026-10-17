@@ -20,7 +20,8 @@ export const gridOperations: INodeProperties[] = [
 			{
 				name: 'Get',
 				value: 'get',
-				description: 'Get a grid with its ranks, competitors ahead and change since the previous grid',
+				description:
+					'Get a grid with its ranks, competitors ahead and change since the previous grid',
 				action: 'Get a grid',
 			},
 			{
@@ -44,7 +45,8 @@ export const gridOperations: INodeProperties[] = [
 			{
 				name: 'Run',
 				value: 'run',
-				description: 'Measure the Google Maps rank of a listing for a keyword at every point of a grid',
+				description:
+					'Measure the Google Maps rank of a listing for a keyword at every point of a grid',
 				action: 'Run a grid',
 			},
 		],
@@ -75,7 +77,9 @@ const listingFields: INodeProperties[] = [
 		default: '',
 		placeholder: "Joe's Pizza, New York",
 		description: 'Listing name and city; the first match is measured',
-		displayOptions: { show: { resource: GRID, operation: RUN_OR_ESTIMATE, listingSource: ['query'] } },
+		displayOptions: {
+			show: { resource: GRID, operation: RUN_OR_ESTIMATE, listingSource: ['query'] },
+		},
 	},
 	{
 		displayName: 'Place ID',
@@ -85,7 +89,9 @@ const listingFields: INodeProperties[] = [
 		default: '',
 		placeholder: 'ChIJ…',
 		description: 'Google place ID of the listing. Find it with Listing → Search.',
-		displayOptions: { show: { resource: GRID, operation: RUN_OR_ESTIMATE, listingSource: ['placeId'] } },
+		displayOptions: {
+			show: { resource: GRID, operation: RUN_OR_ESTIMATE, listingSource: ['placeId'] },
+		},
 	},
 	{
 		displayName: 'Keyword',
@@ -234,7 +240,9 @@ const historyFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		displayOptions: { show: { resource: GRID, operation: ['getHistory'], historyBy: ['placeKeyword'] } },
+		displayOptions: {
+			show: { resource: GRID, operation: ['getHistory'], historyBy: ['placeKeyword'] },
+		},
 	},
 	{
 		displayName: 'Keyword',
@@ -243,7 +251,9 @@ const historyFields: INodeProperties[] = [
 		required: true,
 		default: '',
 		description: 'The latest grid of this listing and keyword sets the format',
-		displayOptions: { show: { resource: GRID, operation: ['getHistory'], historyBy: ['placeKeyword'] } },
+		displayOptions: {
+			show: { resource: GRID, operation: ['getHistory'], historyBy: ['placeKeyword'] },
+		},
 	},
 	{
 		displayName: 'Limit',
