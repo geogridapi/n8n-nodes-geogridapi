@@ -1,0 +1,58 @@
+{
+    "name": "n8n-nodes-geogridapi",
+    "version": "0.1.0",
+    "description": "n8n node for GeoGridAPI: Google Maps geo-grid rank tracking (local SEO) - run grids, get ranks, competitors ahead, trends and PNG heatmaps.",
+    "license": "MIT",
+    "homepage": "https://geogridapi.io/en/docs/no-code",
+    "keywords": [
+        "n8n-community-node-package",
+        "n8n",
+        "geogridapi",
+        "google maps",
+        "geo-grid",
+        "geogrid",
+        "local seo",
+        "rank tracker",
+        "google business profile"
+    ],
+    "author": {
+        "name": "GeoGridAPI",
+        "email": "sav@localnord.fr"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/geogridapi/n8n-nodes-geogridapi.git"
+    },
+    "scripts": {
+        "build": "n8n-node build",
+        "build:watch": "tsc --watch",
+        "dev": "n8n-node dev",
+        "lint": "n8n-node lint",
+        "lint:fix": "n8n-node lint --fix",
+        "release": "n8n-node release",
+        "prepublishOnly": "n8n-node prerelease"
+    },
+    "files": [
+        "dist"
+    ],
+    "n8n": {
+        "n8nNodesApiVersion": 1,
+        "strict": true,
+        "credentials": [
+            "dist/credentials/GeoGridApi.credentials.js"
+        ],
+        "nodes": [
+            "dist/nodes/GeoGridApi/GeoGridApi.node.js"
+        ]
+    },
+    "devDependencies": {
+        "@n8n/node-cli": "^0.52.5",
+        "eslint": "9.32.0",
+        "prettier": "3.6.2",
+        "release-it": "^21.1.0",
+        "typescript": "5.9.2"
+    },
+    "peerDependencies": {
+        "n8n-workflow": "*"
+    }
+}
